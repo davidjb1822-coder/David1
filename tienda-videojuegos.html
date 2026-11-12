@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level Up · Tienda de videojuegos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ECEFFF; --ink:#17143A; --card:#fff; --pink:#E8267A; --sun:#FFD23F; --muted:#5B5880;
+    --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+    --body:"DM Sans",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14122B; --ink:#F2F0FF; --card:#211E45; --muted:#A9A6D0; }
+  }
+  *{box-sizing:border-box;margin:0}
+  body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.5}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:2px solid var(--ink)}
+  .bar{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font:800 1.5rem var(--display);letter-spacing:-.02em}
+  .logo span{background:var(--pink);color:#fff;padding:0 .35em;border-radius:6px;margin-left:2px}
+  .cart-btn{background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:.55em 1.1em;font-weight:700}
+  .cart-btn b{background:var(--sun);color:#17143A;border-radius:999px;padding:0 .55em;margin-left:.4em}
+
+  .hero{padding:64px 0 40px}
+  .hero h1{font:800 clamp(2.4rem,7vw,4.8rem)/1 var(--display);letter-spacing:-.03em;max-width:12ch}
+  .hero p{margin:20px 0 28px;max-width:46ch;color:var(--muted);font-size:1.1rem}
+  .cta{display:inline-block;background:var(--pink);color:#fff;text-decoration:none;font-weight:700;padding:.85em 1.6em;border-radius:12px;box-shadow:4px 4px 0 var(--ink)}
+  .cta:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 24px}
+  .chip{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:.35em 1em;font-weight:500}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px;padding-bottom:72px}
+  .game{background:var(--card);border:2px solid var(--ink);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .cover{height:150px;position:relative;display:grid;place-items:center;font:800 2.4rem var(--display);color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.25)}
+  .sticker{position:absolute;top:12px;right:-6px;background:var(--sun);color:#17143A;font:800 .95rem var(--display);padding:.15em .6em;transform:rotate(6deg);border:2px solid #17143A;border-radius:6px;text-shadow:none}
+  .info{padding:16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .info h3{font:800 1.15rem var(--display)}
+  .info small{color:var(--muted)}
+  .price{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:8px}
+  .price strong{font:800 1.3rem var(--display)}
+  .price s{color:var(--muted);font-size:.9rem}
+  .add{margin-top:8px;border:2px solid var(--ink);background:var(--sun);color:#17143A;border-radius:10px;padding:.55em;font-weight:700}
+  .add:hover{background:var(--pink);color:#fff}
+
+  .perks{border-top:2px solid var(--ink);padding:36px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+  .perks h4{font:800 1.05rem var(--display)}
+  .perks p{color:var(--muted);font-size:.95rem}
+  footer{border-top:2px solid var(--ink);padding:24px 0;color:var(--muted);font-size:.9rem}
+
+  /* Carrito */
+  .veil{position:fixed;inset:0;background:rgba(10,8,30,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+  .veil.on{opacity:1;pointer-events:auto}
+  aside{position:fixed;top:0;right:0;height:100%;width:min(380px,100%);background:var(--bg);border-left:2px solid var(--ink);z-index:11;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  aside.on{transform:none}
+  .ch{display:flex;justify-content:space-between;align-items:center;padding:18px;border-bottom:2px solid var(--ink)}
+  .ch h2{font:800 1.4rem var(--display)}
+  .x{background:none;border:0;color:var(--ink);font-size:1.6rem;line-height:1}
+  .items{flex:1;overflow:auto;padding:12px 18px}
+  .item{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px dashed var(--muted)}
+  .item small{color:var(--muted);display:block}
+  .qty{display:flex;align-items:center;gap:6px}
+  .qty button{width:28px;height:28px;border-radius:8px;border:2px solid var(--ink);background:var(--card);color:var(--ink);font-weight:700}
+  .empty{color:var(--muted);padding:24px 0}
+  .foot{padding:18px;border-top:2px solid var(--ink)}
+  .total{display:flex;justify-content:space-between;font:800 1.3rem var(--display);margin-bottom:12px}
+  .pay{width:100%;border:0;background:var(--pink);color:#fff;font-weight:700;padding:.9em;border-radius:12px;box-shadow:4px 4px 0 var(--ink)}
+  .pay:disabled{opacity:.5;box-shadow:none;cursor:not-allowed}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="logo">Level<span>Up</span></div>
+    <button class="cart-btn" id="abrir" aria-label="Abrir carrito">Carrito <b id="cuenta">0</b></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Juegos al mejor precio</h1>
+    <p>Claves digitales para PC y consola, entrega inmediata y ofertas que cambian cada semana.</p>
+    <a class="cta" href="#catalogo">Ver ofertas</a>
+  </section>
+
+  <section id="catalogo" aria-label="Catálogo">
+    <div class="filters" id="filtros" role="group" aria-label="Filtrar por género"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="perks">
+    <div><h4>Entrega inmediata</h4><p>Recibes la clave por correo apenas se confirma el pago.</p></div>
+    <div><h4>Pago seguro</h4><p>Tarjeta, transferencia o billetera digital.</p></div>
+    <div><h4>Soporte en español</h4><p>Si una clave no funciona, la reemplazamos.</p></div>
+  </section>
+</main>
+
+<footer><div class="wrap">© 2026 Level Up. Todos los derechos reservados.</div></footer>
+
+<div class="veil" id="veil"></div>
+<aside id="panel" aria-label="Carrito de compras" aria-hidden="true">
+  <div class="ch"><h2>Tu carrito</h2><button class="x" id="cerrar" aria-label="Cerrar carrito">×</button></div>
+  <div class="items" id="items"></div>
+  <div class="foot">
+    <div class="total"><span>Total</span><span id="total">$0.00</span></div>
+    <button class="pay" id="pagar" disabled>Finalizar compra</button>
+  </div>
+</aside>
+
+<script>
+  // ===== Datos: edita esta lista con tus juegos =====
+  const MONEDA = { locale: "es-US", code: "USD" };
+  const JUEGOS = [
+    { id: 1, nombre: "Neon Drifter",     genero: "Carreras",   plataforma: "PC · PS5",      precio: 29.99, antes: 49.99, color: ["#FF4E8A","#7B2FF7"] },
+    { id: 2, nombre: "Dungeon Hollow",   genero: "RPG",        plataforma: "PC · Switch",   precio: 24.99, antes: 39.99, color: ["#1FA2A6","#0B3D5C"] },
+    { id: 3, nombre: "Pixel Farm Co.",   genero: "Simulación", plataforma: "PC · Switch",   precio: 14.99, antes: 19.99, color: ["#7BC950","#2F7D32"] },
+    { id: 4, nombre: "Void Marines",     genero: "Acción",     plataforma: "PC · Xbox",     precio: 39.99, antes: 59.99, color: ["#FF8A3D","#8E1B1B"] },
+    { id: 5, nombre: "Tiny Wizards",     genero: "RPG",        plataforma: "PC",            precio: 9.99,  antes: 17.99, color: ["#A78BFA","#312E81"] },
+    { id: 6, nombre: "Goal Rush 26",     genero: "Deportes",   plataforma: "PS5 · Xbox",    precio: 44.99, antes: 69.99, color: ["#38BDF8","#1D4ED8"] },
+    { id: 7, nombre: "Escape Room Zero", genero: "Puzles",     plataforma: "PC · Switch",   precio: 12.99, antes: 12.99, color: ["#FBBF24","#B45309"] },
+    { id: 8, nombre: "Rift Arena",       genero: "Acción",     plataforma: "PC · PS5",      precio: 19.99, antes: 34.99, color: ["#F43F5E","#4C0519"] }
+  ];
+
+  const $ = s => document.querySelector(s);
+  const fmt = n => new Intl.NumberFormat(MONEDA.locale, { style: "currency", currency: MONEDA.code }).format(n);
+  const carrito = new Map(); // id -> cantidad
+  let genero = "Todos";
+
+  // Filtros
+  const generos = ["Todos", ...new Set(JUEGOS.map(j => j.genero))];
+  function pintarFiltros(){
+    $("#filtros").innerHTML = generos.map(g =>
+      `<button class="chip" aria-pressed="${g === genero}" data-g="${g}">${g}</button>`).join("");
+  }
+  $("#filtros").addEventListener("click", e => {
+    const b = e.target.closest("[data-g]"); if(!b) return;
+    genero = b.dataset.g; pintarFiltros(); pintarJuegos();
+  });
+
+  // Catálogo
+  function pintarJuegos(){
+    const lista = JUEGOS.filter(j => genero === "Todos" || j.genero === genero);
+    $("#grid").innerHTML = lista.map(j => {
+      const desc = Math.round((1 - j.precio / j.antes) * 100);
+      return `<article class="game">
+        <div class="cover" style="background:linear-gradient(135deg,${j.color[0]},${j.color[1]})">
+          ${j.nombre.split(" ")[0]}
+          ${desc > 0 ? `<span class="sticker">-${desc}%</span>` : ""}
+        </div>
+        <div class="info">
+          <h3>${j.nombre}</h3>
+          <small>${j.genero} · ${j.plataforma}</small>
+          <div class="price"><strong>${fmt(j.precio)}</strong>${desc > 0 ? `<s>${fmt(j.antes)}</s>` : ""}</div>
+          <button class="add" data-add="${j.id}">Añadir al carrito</button>
+        </div>
+      </article>`;
+    }).join("");
+  }
+  $("#grid").addEventListener("click", e => {
+    const b = e.target.closest("[data-add]"); if(!b) return;
+    const id = +b.dataset.add;
+    carrito.set(id, (carrito.get(id) || 0) + 1);
+    pintarCarrito();
+    b.textContent = "Añadido";
+    setTimeout(() => b.textContent = "Añadir al carrito", 900);
+  });
+
+  // Carrito
+  function pintarCarrito(){
+    let total = 0, cuenta = 0;
+    const filas = [...carrito].map(([id, q]) => {
+      const j = JUEGOS.find(x => x.id === id);
+      total += j.precio * q; cuenta += q;
+      return `<div class="item">
+        <div><strong>${j.nombre}</strong><small>${fmt(j.precio)}</small></div>
+        <div class="qty">
+          <button data-menos="${id}" aria-label="Quitar uno">−</button>
+          <span>${q}</span>
+          <button data-mas="${id}" aria-label="Añadir uno">+</button>
+        </div>
+      </div>`;
+    });
+    $("#items").innerHTML = filas.join("") || `<p class="empty">Tu carrito está vacío. Añade un juego para empezar.</p>`;
+    $("#total").textContent = fmt(total);
+    $("#cuenta").textContent = cuenta;
+    $("#pagar").disabled = cuenta === 0;
+  }
+  $("#items").addEventListener("click", e => {
+    const mas = e.target.closest("[data-mas]"), menos = e.target.closest("[data-menos]");
+    if(mas){ const id = +mas.dataset.mas; carrito.set(id, carrito.get(id) + 1); }
+    if(menos){ const id = +menos.dataset.menos, q = carrito.get(id) - 1; q > 0 ? carrito.set(id, q) : carrito.delete(id); }
+    pintarCarrito();
+  });
+
+  const panel = $("#panel"), veil = $("#veil");
+  function abrir(v){
+    panel.classList.toggle("on", v); veil.classList.toggle("on", v);
+    panel.setAttribute("aria-hidden", !v);
+    if(v) $("#cerrar").focus(); else $("#abrir").focus();
+  }
+  $("#abrir").onclick = () => abrir(true);
+  $("#cerrar").onclick = veil.onclick = () => abrir(false);
+  document.addEventListener("keydown", e => { if(e.key === "Escape") abrir(false); });
+  $("#pagar").onclick = () => {
+    // Aquí conectarías tu pasarela de pago (Stripe, MercadoPago, PayU, etc.)
+    alert("¡Gracias por tu compra! Revisa tu correo para ver tus claves.");
+    carrito.clear(); pintarCarrito(); abrir(false);
+  };
+
+  pintarFiltros(); pintarJuegos(); pintarCarrito();
+</script>
+</body>
+</html>
